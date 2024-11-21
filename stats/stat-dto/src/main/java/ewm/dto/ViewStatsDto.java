@@ -5,9 +5,12 @@ import lombok.Data;
 @Data
 public class ViewStatsDto {
 
-    private String app;   // Название приложения
+    // Название приложения
+    private String app;
 
-    private String uri;   // URI, к которому был запрос
+    // URI, к которому был запрос
+    private String uri;
 
-    private long hits;    // Количество просмотров (агрегированное значение)
+    // Количество просмотров (агрегированное значение)
+    private long hits;
 }
