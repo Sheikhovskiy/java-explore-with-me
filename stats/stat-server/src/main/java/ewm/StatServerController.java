@@ -6,6 +6,7 @@ import ewm.model.EndpointHit;
 import ewm.service.StatServerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.antlr.v4.runtime.atn.SemanticContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,10 +16,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
-@RequestMapping("/stats")
+@RequestMapping
 @RequiredArgsConstructor
 @Slf4j
 public class StatServerController {
@@ -35,14 +39,16 @@ public class StatServerController {
         statServerService.createHit(endpointHit);
     }
 
-    @GetMapping
+    @GetMapping("/stats")
     public List<ViewStatsDto> getStats(
             @RequestParam String start,
             @RequestParam String end,
-            @RequestParam List<String> uris,
+            @RequestParam(defaultValue = "") List<String> uris,
             @RequestParam(defaultValue = "false") boolean unique) {
 
-        log.info("Получен запрос на сервер статистики о получение статистики");
+        log.info("Получен запрос на сервер статистики о получение статистики: " +
+                "c {} по {} к {} уникальные: {}", start, end, uris, unique);
+
         List<EndpointHit> stats = statServerService.getStats(start, end, uris, unique);
 
         return StatsMapper.toListStatsDtoFromListStat(stats);

@@ -36,4 +36,7 @@ public class EndpointHit {
 
     @Column(name = "time_created", nullable = false)
     private LocalDateTime timestamp;
+
+    @Transient
+    private Long hits;
 }

@@ -5,7 +5,10 @@ import ewm.dto.ViewStatsDto;
 import ewm.model.EndpointHit;
 import lombok.experimental.UtilityClass;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,7 +22,10 @@ public class StatsMapper {
         endpointHit.setApp(hitCreateDto.getApp());
         endpointHit.setUri(hitCreateDto.getUri());
         endpointHit.setIp(hitCreateDto.getIp());
-        endpointHit.setTimestamp(LocalDateTime.parse(hitCreateDto.getTimestamp()));
+//        System.out.println(hitCreateDto.getTimestamp());
+//        System.out.println(toTimeFormatFromString(hitCreateDto.getTimestamp()));
+//        endpointHit.setTimestamp(LocalDateTime.parse(hitCreateDto.getTimestamp()));
+        endpointHit.setTimestamp(toTimeFormatFromString(hitCreateDto.getTimestamp()));
 
         return endpointHit;
     }
@@ -30,7 +36,12 @@ public class StatsMapper {
 
         viewStatsDto.setApp(endpointHit.getApp());
         viewStatsDto.setUri(endpointHit.getUri());
-//        viewStatsDto.setHits(endpointHit.getHits());
+        if (endpointHit.getHits() == null) {
+            viewStatsDto.setHits(0);
+        } else {
+            viewStatsDto.setHits(endpointHit.getHits());
+        }
+
         return viewStatsDto;
     }
 
@@ -41,6 +52,13 @@ public class StatsMapper {
                 .collect(Collectors.toList());
     }
 
+    private LocalDateTime toTimeFormatFromString(String time) {
 
+        time = URLDecoder.decode(time, StandardCharsets.UTF_8);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime dateTime = LocalDateTime.parse(time, formatter);
+        return dateTime;
+    }
 
 }

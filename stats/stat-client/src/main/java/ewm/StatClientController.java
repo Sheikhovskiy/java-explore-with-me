@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @Controller
-@RequestMapping(path = "/stats")
+@RequestMapping
 @RequiredArgsConstructor
 @Slf4j
 @Validated
