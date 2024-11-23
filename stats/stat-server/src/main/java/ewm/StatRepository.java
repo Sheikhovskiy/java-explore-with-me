@@ -1,7 +1,6 @@
 package ewm;
 
 import ewm.model.EndpointHit;
-import jakarta.websocket.Endpoint;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
