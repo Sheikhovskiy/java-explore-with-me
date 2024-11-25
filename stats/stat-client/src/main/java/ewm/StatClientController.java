@@ -30,7 +30,7 @@ public class StatClientController {
     @PostMapping("/hit")
     public ResponseEntity<Object> createHit(@RequestBody @Valid HitCreateDto hitCreateDto) {
 
-        log.info("Получен запрос на сохранение запроса к приложению {} по пути {}", hitCreateDto.getApp(), hitCreateDto.getUri());
+        log.info("Получен запрос на сохранение запроса {}", hitCreateDto);
 
         statClient.sendHit(hitCreateDto);
 

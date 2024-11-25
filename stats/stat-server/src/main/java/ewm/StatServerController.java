@@ -31,7 +31,6 @@ public class StatServerController {
 
         log.info("Получен запрос на сервер статистики об обращении к приложению {}", hitCreateDto);
         EndpointHit endpointHit = StatsMapper.toStatFromHitCreateDto(hitCreateDto); // Преобразование DTO в сущность
-        log.info(hitCreateDto.getTimestamp());
         statServerService.createHit(endpointHit);
     }
 

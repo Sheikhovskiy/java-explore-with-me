@@ -28,7 +28,6 @@ public class StatServerServiceImpl implements StatServerService {
         System.out.println(endpointHit);
         EndpointHit receivedStat = statRepository.save(endpointHit);
         System.out.println(receivedStat);
-        return;
     }
 
     @Override
@@ -79,7 +78,6 @@ public class StatServerServiceImpl implements StatServerService {
                     EndpointHit endpointHit = new EndpointHit();
                     endpointHit.setApp(obj[0].toString());
                     endpointHit.setUri(obj[1].toString());
-//                    endpointHit.setIp("unique");
                     endpointHit.setTimestamp((LocalDateTime) obj[2]);
                     endpointHit.setHits((Long) obj[3]);
                     return endpointHit;
@@ -90,15 +88,6 @@ public class StatServerServiceImpl implements StatServerService {
     private LocalDateTime toTimeFormatFromString(String time) {
 
         time = URLDecoder.decode(time, StandardCharsets.UTF_8);
-
-//        time = time.replace('T', ' ');
-//        System.out.println(time);
-//
-//        // Normalize multiple spaces to a single space
-//        time = time.replaceAll("\\s+", " ");
-//
-//        // Trim leading and trailing spaces
-//        time = time.trim();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dateTime = LocalDateTime.parse(time, formatter);
