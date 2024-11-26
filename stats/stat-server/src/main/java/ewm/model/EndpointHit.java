@@ -2,7 +2,6 @@ package ewm.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,7 +9,7 @@ import lombok.ToString;
 
 import java.time.LocalDateTime;
 
-@Data
+//@Data
 @Entity
 @Table(name = "endpoint_hit")
 @Getter
