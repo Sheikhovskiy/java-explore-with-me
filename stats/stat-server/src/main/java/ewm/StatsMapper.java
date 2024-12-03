@@ -1,7 +1,7 @@
 package ewm;
 
 import ewm.dto.HitCreateDto;
-import ewm.dto.ViewStatsDto;
+import ewm.dto.StatsDto;
 import ewm.model.EndpointHit;
 import lombok.experimental.UtilityClass;
 
@@ -12,6 +12,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static ewm.CommonConstants.COMMON_LOCAL_DATE_TIME_PATTERN;
+
 @UtilityClass
 public class StatsMapper {
 
@@ -20,32 +22,28 @@ public class StatsMapper {
 
         EndpointHit endpointHit = new EndpointHit();
         endpointHit.setApp(hitCreateDto.getApp());
-        endpointHit.setUri(hitCreateDto.getUri());
+        endpointHit.setUri(String.valueOf(hitCreateDto.getUri()));
         endpointHit.setIp(hitCreateDto.getIp());
         endpointHit.setTimestamp(toTimeFormatFromString(hitCreateDto.getTimestamp()));
 
         return endpointHit;
     }
 
-    public ViewStatsDto toViewStatsDtoFromStat(EndpointHit endpointHit) {
+    public StatsDto toStatsDtoFromEndpoint(EndpointHit endpointHit) {
 
-        ViewStatsDto viewStatsDto = new ViewStatsDto();
+        StatsDto statsDto = new StatsDto();
 
-        viewStatsDto.setApp(endpointHit.getApp());
-        viewStatsDto.setUri(endpointHit.getUri());
-        if (endpointHit.getHits() == null) {
-            viewStatsDto.setHits(0);
-        } else {
-            viewStatsDto.setHits(endpointHit.getHits());
-        }
+        statsDto.setApp(endpointHit.getApp());
+        statsDto.setUri(endpointHit.getUri());
+        statsDto.setHits(endpointHit.getHits());
 
-        return viewStatsDto;
+        return statsDto;
     }
 
-    public List<ViewStatsDto> toListStatsDtoFromListStat(List<EndpointHit> endpointHitList) {
+    public List<StatsDto> toListStatsDtoFromListEndpoint(List<EndpointHit> endpointHitList) {
 
         return endpointHitList.stream()
-                .map(StatsMapper::toViewStatsDtoFromStat)
+                .map(StatsMapper::toStatsDtoFromEndpoint)
                 .collect(Collectors.toList());
     }
 
@@ -53,9 +51,9 @@ public class StatsMapper {
 
         time = URLDecoder.decode(time, StandardCharsets.UTF_8);
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime dateTime = LocalDateTime.parse(time, formatter);
-        return dateTime;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(COMMON_LOCAL_DATE_TIME_PATTERN);
+        return LocalDateTime.parse(time, formatter);
     }
+
 
 }

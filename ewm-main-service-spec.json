@@ -2087,7 +2087,7 @@
           },
           "timestamp": {
             "type": "string",
-            "description": "Дата и время когда произошла ошибка (в формате \"yyyy-MM-dd HH:mm:ss\")",
+            "description": "Дата и время когда произошла ошибка (в формате \COMMON_LOCAL_DATE_TIME_PATTERNy-MM-dd HH:mm:ss\")",
             "example": "2022-06-09 06:27:23"
           }
         },
@@ -2215,7 +2215,7 @@
           },
           "createdOn": {
             "type": "string",
-            "description": "Дата и время создания события (в формате \"yyyy-MM-dd HH:mm:ss\")",
+            "description": "Дата и время создания события (в формате \COMMON_LOCAL_DATE_TIME_PATTERNy-MM-dd HH:mm:ss\")",
             "example": "2022-09-06 11:00:23"
           },
           "description": {
@@ -2225,7 +2225,7 @@
           },
           "eventDate": {
             "type": "string",
-            "description": "Дата и время на которые намечено событие (в формате \"yyyy-MM-dd HH:mm:ss\")",
+            "description": "Дата и время на которые намечено событие (в формате \COMMON_LOCAL_DATE_TIME_PATTERNy-MM-dd HH:mm:ss\")",
             "example": "2024-12-31 15:10:05"
           },
           "id": {
@@ -2254,7 +2254,7 @@
           },
           "publishedOn": {
             "type": "string",
-            "description": "Дата и время публикации события (в формате \"yyyy-MM-dd HH:mm:ss\")",
+            "description": "Дата и время публикации события (в формате \COMMON_LOCAL_DATE_TIME_PATTERNy-MM-dd HH:mm:ss\")",
             "example": "2022-09-06 15:10:05"
           },
           "requestModeration": {
@@ -2360,7 +2360,7 @@
           },
           "eventDate": {
             "type": "string",
-            "description": "Дата и время на которые намечено событие (в формате \"yyyy-MM-dd HH:mm:ss\")",
+            "description": "Дата и время на которые намечено событие (в формате \COMMON_LOCAL_DATE_TIME_PATTERNy-MM-dd HH:mm:ss\")",
             "example": "2024-12-31 15:10:05"
           },
           "id": {
@@ -2531,7 +2531,7 @@
           },
           "eventDate": {
             "type": "string",
-            "description": "Дата и время на которые намечено событие. Дата и время указываются в формате \"yyyy-MM-dd HH:mm:ss\"",
+            "description": "Дата и время на которые намечено событие. Дата и время указываются в формате \COMMON_LOCAL_DATE_TIME_PATTERNy-MM-dd HH:mm:ss\"",
             "example": "2024-12-31 15:10:05"
           },
           "location": {
@@ -2677,7 +2677,7 @@
           },
           "eventDate": {
             "type": "string",
-            "description": "Новые дата и время на которые намечено событие. Дата и время указываются в формате \"yyyy-MM-dd HH:mm:ss\"",
+            "description": "Новые дата и время на которые намечено событие. Дата и время указываются в формате \COMMON_LOCAL_DATE_TIME_PATTERNy-MM-dd HH:mm:ss\"",
             "example": "2023-10-11 23:10:05"
           },
           "location": {
@@ -2742,7 +2742,7 @@
           },
           "eventDate": {
             "type": "string",
-            "description": "Новые дата и время на которые намечено событие. Дата и время указываются в формате \"yyyy-MM-dd HH:mm:ss\"",
+            "description": "Новые дата и время на которые намечено событие. Дата и время указываются в формате \COMMON_LOCAL_DATE_TIME_PATTERNy-MM-dd HH:mm:ss\"",
             "example": "2023-10-11 23:10:05"
           },
           "location": {

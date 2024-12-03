@@ -1,6 +1,5 @@
 package ewm.dto;
 
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,5 +11,5 @@ public class StatsDto {
 
     private String uri;
 
-    private Integer hits;
+    private Long hits;
 }

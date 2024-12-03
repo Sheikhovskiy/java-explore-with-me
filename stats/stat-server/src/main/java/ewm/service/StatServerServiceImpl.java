@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static ewm.CommonConstants.COMMON_LOCAL_DATE_TIME_PATTERN;
+
 @Service
 @RequiredArgsConstructor
 public class StatServerServiceImpl implements StatServerService {
@@ -25,21 +27,18 @@ public class StatServerServiceImpl implements StatServerService {
     @Override
     public void createHit(EndpointHit endpointHit) {
 
-        System.out.println(endpointHit);
-        EndpointHit receivedStat = statRepository.save(endpointHit);
-        System.out.println(receivedStat);
+        endpointHit.setHits(1L);
+        EndpointHit savedStat = statRepository.save(endpointHit);
     }
 
     @Override
-    public List<EndpointHit> getStats(String start, String end, List<String> uris, boolean unique) {
+    public List<EndpointHit> getStats(String start, String end, List<String> uris, boolean unique)  {
 
         if (unique && !uris.isEmpty()) {
             List<Object[]> list = statRepository.getStatsByParametersUnique(toTimeFormatFromString(start), toTimeFormatFromString(end), uris);
             return makeEndPointListUniqueWithHits(list);
-
         } else if (unique && uris.isEmpty()) {
-            List<EndpointHit> list =  statRepository.getStatsByParametersEmptyUrisUnique(toTimeFormatFromString(start), toTimeFormatFromString(end));
-            return list;
+            return statRepository.getStatsByParametersEmptyUrisUnique(toTimeFormatFromString(start), toTimeFormatFromString(end));
         } else if (!unique && uris.isEmpty()) {
             List<EndpointHit> list = statRepository.getStatsByParametersEmptyUris(toTimeFormatFromString(start), toTimeFormatFromString(end));
 
@@ -89,9 +88,8 @@ public class StatServerServiceImpl implements StatServerService {
 
         time = URLDecoder.decode(time, StandardCharsets.UTF_8);
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime dateTime = LocalDateTime.parse(time, formatter);
-        return dateTime;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(COMMON_LOCAL_DATE_TIME_PATTERN);
+        return LocalDateTime.parse(time, formatter);
     }
 
 
