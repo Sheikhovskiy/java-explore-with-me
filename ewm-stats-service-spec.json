@@ -54,7 +54,7 @@
           {
             "name": "start",
             "in": "query",
-            "description": "Дата и время начала диапазона за который нужно выгрузить статистику (в формате \"yyyy-MM-dd HH:mm:ss\")",
+            "description": "Дата и время начала диапазона за который нужно выгрузить статистику (в формате \COMMON_LOCAL_DATE_TIME_PATTERNy-MM-dd HH:mm:ss\")",
             "required": true,
             "schema": {
               "type": "string"
@@ -63,7 +63,7 @@
           {
             "name": "end",
             "in": "query",
-            "description": "Дата и время конца диапазона за который нужно выгрузить статистику (в формате \"yyyy-MM-dd HH:mm:ss\")",
+            "description": "Дата и время конца диапазона за который нужно выгрузить статистику (в формате \COMMON_LOCAL_DATE_TIME_PATTERNy-MM-dd HH:mm:ss\")",
             "required": true,
             "schema": {
               "type": "string"
@@ -139,7 +139,7 @@
           },
           "timestamp": {
             "type": "string",
-            "description": "Дата и время, когда был совершен запрос к эндпоинту (в формате \"yyyy-MM-dd HH:mm:ss\")",
+            "description": "Дата и время, когда был совершен запрос к эндпоинту (в формате \COMMON_LOCAL_DATE_TIME_PATTERNy-MM-dd HH:mm:ss\")",
             "example": "2022-09-06 11:00:23"
           }
         }

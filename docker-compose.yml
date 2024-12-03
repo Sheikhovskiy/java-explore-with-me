@@ -31,8 +31,8 @@ services:
     depends_on:
       - ewm-db
     environment:
-      - CLIENT_URL=http://stat-server:9090
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5438/service
+      - CLIENT_URL=http://stats-server:9090
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/service
       - SPRING_DATASOURCE_USERNAME=main
       - SPRING_DATASOURCE_PASSWORD=main
 
@@ -40,8 +40,8 @@ services:
     image: postgres:16.1
     container_name: postgres-ewm-main-db
     ports:
-      - "6548:5438"
+      - "6548:5432"
     environment:
-      - POSTGRES_PASSWORD=12333
+      - POSTGRES_PASSWORD=main
       - POSTGRES_USER=main
       - POSTGRES_DB=service
