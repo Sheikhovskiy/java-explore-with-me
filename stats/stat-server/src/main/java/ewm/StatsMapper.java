@@ -2,7 +2,6 @@ package ewm;
 
 import ewm.dto.HitCreateDto;
 import ewm.dto.StatsDto;
-import ewm.dto.ViewStatsDto;
 import ewm.model.EndpointHit;
 import lombok.experimental.UtilityClass;
 
