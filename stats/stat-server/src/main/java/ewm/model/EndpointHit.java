@@ -9,7 +9,6 @@ import lombok.ToString;
 
 import java.time.LocalDateTime;
 
-//@Data
 @Entity
 @Table(name = "endpoint_hit")
 @Getter
