@@ -22,7 +22,7 @@ services:
       - POSTGRES_USER=stat
       - POSTGRES_DB=stats
 
-  main-service:
+  ewm-service:
     build: main-service
     image: ewm-service
     container_name: emw-service
