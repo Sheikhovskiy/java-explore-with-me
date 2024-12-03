@@ -50,29 +50,29 @@ public class UserServiceImpl implements UserService {
 
     private final LocationRepository locationRepository;
 
-    private final static String USER_EXISTS_BY_EMAIL = "Ошибка при работе с пользователями: " +
+    private static final String USER_EXISTS_BY_EMAIL = "Ошибка при работе с пользователями: " +
             "Пользователь с почтой {} уже существует!";
 
-    private final static String NOT_EXISTING_USER = "Пользователь не найден";
+    private static final String NOT_EXISTING_USER = "Пользователь не найден";
 
-    private final static String NOT_EXISTING_EVENT = "Событие не найдено или недоступно";
+    private static final String NOT_EXISTING_EVENT = "Событие не найдено или недоступно";
 
-    private final static String ALREADY_EXISTING_REQUEST_FOR_EVENT = "Заявка на участие в мероприятие по id %d уже существует !";
+    private static final String ALREADY_EXISTING_REQUEST_FOR_EVENT = "Заявка на участие в мероприятие по id %d уже существует !";
 
-    private final static String NOT_PERMITTED_TO_APPLY_TO_PARTICIPATE_AT_OWN_EVENT = "Инициатор с id %d события с id %d не может добавить запрос на участие в своём событии";
+    private static final String NOT_PERMITTED_TO_APPLY_TO_PARTICIPATE_AT_OWN_EVENT = "Инициатор с id %d события с id %d не может добавить запрос на участие в своём событии";
 
-    private final static String NOT_PERMITTED_TO_APPLY_TO_NOT_PUBLISHED_EVENT = "Нельзя участвовать в неопубликованном событии с id %d";
+    private static final String NOT_PERMITTED_TO_APPLY_TO_NOT_PUBLISHED_EVENT = "Нельзя участвовать в неопубликованном событии с id %d";
 
-    private final static String EVENT_REACHED_MAX_PARTICIPANTS = "У события с id %d достигнут лимит запросов на участие";
+    private static final String EVENT_REACHED_MAX_PARTICIPANTS = "У события с id %d достигнут лимит запросов на участие";
 
-    private final static String NOT_EXISTING_REQUEST = "Запрос с id %d не найден или не существует";
+    private static final String NOT_EXISTING_REQUEST = "Запрос с id %d не найден или не существует";
 
-    private final static String NOT_EXISTING_CATEGORY = "Ошибка при работе с пользователями: Категория по id %d " +
+    private static final String NOT_EXISTING_CATEGORY = "Ошибка при работе с пользователями: Категория по id %d " +
             ", которую вы пытаетесь использовать не существует !";
 
-    private final static String NOT_RESPECTED_CONDITIONS_TO_MODIFY_USER_EVENT = "Изменить можно только отмененные события или события в состоянии ожидания модерации";
+    private static final String NOT_RESPECTED_CONDITIONS_TO_MODIFY_USER_EVENT = "Изменить можно только отмененные события или события в состоянии ожидания модерации";
 
-    private final static String NOT_RESPECTED_TIME_RULES_TO_MODIFY_USER_EVENT = "Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента";
+    private static final String NOT_RESPECTED_TIME_RULES_TO_MODIFY_USER_EVENT = "Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента";
 
 
     @Override
