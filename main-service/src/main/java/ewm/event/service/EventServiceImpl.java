@@ -38,7 +38,6 @@ public class EventServiceImpl implements EventService {
 
     private final StatClient statClient;
 
-
     private static final String NOT_EXISTING_EVENT = "Событие не найдено или недоступно";
 
     private static final String NOT_RESPECTED_CONDITIONS_TO_UPDATE_EVENT = "Событие не удовлетворяет правилам редактирования";
@@ -272,7 +271,7 @@ public class EventServiceImpl implements EventService {
         Object object1 = statClient.sendHit(hitCreateDto);
 
         if (viewStatsDtoList.isEmpty()) {
-            event.setViews(event.getViews() +1);
+            event.setViews(event.getViews()+1);
         }
 
         return eventRepository.save(event);
