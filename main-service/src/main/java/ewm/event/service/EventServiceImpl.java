@@ -271,7 +271,7 @@ public class EventServiceImpl implements EventService {
         Object object1 = statClient.sendHit(hitCreateDto);
 
         if (viewStatsDtoList.isEmpty()) {
-            event.setViews(event.getViews()+1);
+            event.setViews(event.getViews() + 1);
         }
 
         return eventRepository.save(event);
