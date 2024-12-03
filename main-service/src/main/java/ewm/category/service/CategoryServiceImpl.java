@@ -28,13 +28,13 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final EventRepository eventRepository;
 
-    private final static String CATEGORY_ALREADY_EXIST = "Ошибка при работе с категориями: Категория {} " +
+    private static final String CATEGORY_ALREADY_EXIST = "Ошибка при работе с категориями: Категория {} " +
             "уже существует !";
 
-    private final static String NOT_EXISTING_CATEGORY = "Ошибка при работе с категориями: Категория по id {} " +
+    private static final String NOT_EXISTING_CATEGORY = "Ошибка при работе с категориями: Категория по id {} " +
             ", которую вы пытаетесь изменить не существует !";
 
-    private final static String CATEGORY_IS_INDICATED_IN_EVENTS = "Ошибка при работе с категориями: Категория по id {} " +
+    private static final String CATEGORY_IS_INDICATED_IN_EVENTS = "Ошибка при работе с категориями: Категория по id {} " +
             ", которую вы пытаетесь удалить используется в событиях !";
 
 
