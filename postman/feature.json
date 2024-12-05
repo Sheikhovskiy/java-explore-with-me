@@ -1,0 +1,1533 @@
+{
+	"info": {
+		"_postman_id": "86e23abb-ffd8-4e42-973a-853c7be5d3e1",
+		"name": "EWM_feature",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25541828"
+	},
+	"item": [
+		{
+			"name": "Получение списка подписчиков Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"class API {\r",
+							"    constructor(pm) {\r",
+							"        this.pm = pm;\r",
+							"        this.baseUrl = 'http://localhost:8080';\r",
+							"    }\r",
+							"\r",
+							"    generateRandomEmail(baseEmail) {\r",
+							"        const randomSuffix = Math.random().toString(36).substring(2, 8); // Генерация случайного суффикса\r",
+							"        const [localPart, domain] = baseEmail.split('@');\r",
+							"        return `${localPart}+${randomSuffix}@${domain}`;\r",
+							"    }\r",
+							"\r",
+							"    async sendRequest(method, path, body = null, headers = { 'Content-Type': 'application/json' }) {\r",
+							"        const options = {\r",
+							"            url: `${this.baseUrl}${path}`,\r",
+							"            method,\r",
+							"            header: headers,\r",
+							"        };\r",
+							"        if (body) {\r",
+							"            options.body = {\r",
+							"                mode: 'raw',\r",
+							"                raw: JSON.stringify(body),\r",
+							"            };\r",
+							"        }\r",
+							"        const response = await new Promise((resolve, reject) => {\r",
+							"            this.pm.sendRequest(options, (error, res) => {\r",
+							"                if (error) reject(error);\r",
+							"                else resolve(res);\r",
+							"            });\r",
+							"        });\r",
+							"        const jsonResponse = response.json();\r",
+							"        return jsonResponse;\r",
+							"    }\r",
+							"\r",
+							"    async createUser(email, name) {\r",
+							"        const randomEmail = this.generateRandomEmail(email);\r",
+							"        const userData = { email: randomEmail, name };\r",
+							"        const response = await this.sendRequest('POST', '/admin/users', userData);\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: пользователь не создан, отсутствует ID');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"\r",
+							"    async createFollowRequest(followerId, userId) {\r",
+							"        if (!followerId || !userId) {\r",
+							"            throw new Error('Ошибка: ID подписчика или пользователя отсутствуют');\r",
+							"        }\r",
+							"        const path = `/subscriptions/${followerId}/follow/${userId}`;\r",
+							"        const response = await this.sendRequest('POST', path, { status: 'PENDING' });\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: запрос на подписку не создан, отсутствует ID');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"\r",
+							"    async approveFollowRequest(ownerId, followerId) {\r",
+							"        if (!ownerId || !followerId) {\r",
+							"            throw new Error('Ошибка: ID владельца или подписчика отсутствуют');\r",
+							"        }\r",
+							"        const path = `/subscriptions/${ownerId}/request/${followerId}`;\r",
+							"        const response = await this.sendRequest('PATCH', path, { status: 'APPROVE_REQUEST' });\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: подписка не подтверждена');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"}\r",
+							"\r",
+							"const main = async () => {\r",
+							"    const api = new API(pm);\r",
+							"\r",
+							"    try {\r",
+							"        // Создаем пользователей\r",
+							"        const user5 = await api.createUser('user5@example.com', 'User 5');\r",
+							"        pm.variables.set('followerId', user5.id);\r",
+							"\r",
+							"        const user6 = await api.createUser('user6@example.com', 'User 6');\r",
+							"        pm.variables.set('followingId', user6.id);\r",
+							"\r",
+							"        // Создаем запрос на подписку\r",
+							"        const followRequest = await api.createFollowRequest(user5.id, user6.id);\r",
+							"        pm.environment.set('followRequest', followRequest);\r",
+							"\r",
+							"        // Подтверждаем запрос на подписку\r",
+							"        const approveFollowRequestResult = await api.approveFollowRequest(user6.id, user5.id);\r",
+							"        pm.environment.set('approveFollowRequest', approveFollowRequestResult);\r",
+							"\r",
+							"        // Логируем результаты\r",
+							"        console.log('Создан пользователь 5:', user5);\r",
+							"        console.log('Создан пользователь 6:', user6);\r",
+							"        console.log('Создан запрос на подписку:', followRequest);\r",
+							"        console.log('Подтверждение подписки:', approveFollowRequestResult);\r",
+							"\r",
+							"    } catch (error) {\r",
+							"        console.error('Ошибка:', error);\r",
+							"    }\r",
+							"};\r",
+							"\r",
+							"main();\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код статуса 200 и данные в формате JSON\", function () {\r",
+							"    pm.response.to.have.status(200);  \r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"});\r",
+							"\r",
+							"const targets = pm.response.json(); \r",
+							"\r",
+							"pm.test(\"Ответ должен быть списком объектов\", function () {\r",
+							"    pm.expect(targets).to.be.an('array', \"Ответ должен быть массивом\");\r",
+							"    pm.expect(targets.length).to.be.greaterThan(0, \"Массив не должен быть пустым\");\r",
+							"});\r",
+							"\r",
+							"targets.forEach((target, index) => {\r",
+							"    pm.test(`Объект должен содержать поля: id и name`, function () {\r",
+							"        pm.expect(target).to.have.property('id').that.is.a('number');\r",
+							"        pm.expect(target).to.have.property('name').that.is.a('string');\r",
+							"    });\r",
+							"\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/subscriptions/:followingId/followers",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"subscriptions",
+						":followingId",
+						"followers"
+					],
+					"variable": [
+						{
+							"key": "followingId",
+							"value": "{{followingId}}"
+						}
+					]
+				},
+				"description": "Обратите внимание: дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента"
+			},
+			"response": []
+		},
+		{
+			"name": "Отмена подписки на пользователя",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"class API {\r",
+							"    constructor(pm) {\r",
+							"        this.pm = pm;\r",
+							"        this.baseUrl = 'http://localhost:8080';\r",
+							"    }\r",
+							"\r",
+							"    generateRandomEmail(baseEmail) {\r",
+							"        const randomSuffix = Math.random().toString(36).substring(2, 8); // Генерация случайного суффикса\r",
+							"        const [localPart, domain] = baseEmail.split('@');\r",
+							"        return `${localPart}+${randomSuffix}@${domain}`;\r",
+							"    }\r",
+							"\r",
+							"    async sendRequest(method, path, body = null, headers = { 'Content-Type': 'application/json' }) {\r",
+							"        const options = {\r",
+							"            url: `${this.baseUrl}${path}`,\r",
+							"            method,\r",
+							"            header: headers,\r",
+							"        };\r",
+							"        if (body) {\r",
+							"            options.body = {\r",
+							"                mode: 'raw',\r",
+							"                raw: JSON.stringify(body),\r",
+							"            };\r",
+							"        }\r",
+							"        const response = await new Promise((resolve, reject) => {\r",
+							"            this.pm.sendRequest(options, (error, res) => {\r",
+							"                if (error) reject(error);\r",
+							"                else resolve(res);\r",
+							"            });\r",
+							"        });\r",
+							"        const jsonResponse = response.json();\r",
+							"        return jsonResponse;\r",
+							"    }\r",
+							"\r",
+							"    async createUser(email, name) {\r",
+							"        const randomEmail = this.generateRandomEmail(email);\r",
+							"        const userData = { email: randomEmail, name };\r",
+							"        const response = await this.sendRequest('POST', '/admin/users', userData);\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: пользователь не создан, отсутствует ID');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"\r",
+							"    async createFollowRequest(followerId, userId) {\r",
+							"        if (!followerId || !userId) {\r",
+							"            throw new Error('Ошибка: ID подписчика или пользователя отсутствуют');\r",
+							"        }\r",
+							"        const path = `/subscriptions/${followerId}/follow/${userId}`;\r",
+							"        const response = await this.sendRequest('POST', path, { status: 'PENDING' });\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: запрос на подписку не создан, отсутствует ID');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"\r",
+							"    async approveFollowRequest(ownerId, followerId) {\r",
+							"        if (!ownerId || !followerId) {\r",
+							"            throw new Error('Ошибка: ID владельца или подписчика отсутствуют');\r",
+							"        }\r",
+							"        const path = `/subscriptions/${ownerId}/request/${followerId}`;\r",
+							"        const response = await this.sendRequest('PATCH', path, { status: 'APPROVE_REQUEST' });\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: подписка не подтверждена');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"}\r",
+							"\r",
+							"const main = async () => {\r",
+							"    const api = new API(pm);\r",
+							"\r",
+							"    try {\r",
+							"        const user5 = await api.createUser('user5@exampledaszas.com', 'User 5');\r",
+							"        pm.environment.set('user5Id', user5.id);\r",
+							"\r",
+							"        const user6 = await api.createUser('user6@exampledaszas.com', 'User 6');\r",
+							"        pm.environment.set('user6Id', user6.id);\r",
+							"\r",
+							"        const followRequest = await api.createFollowRequest(user5.id, user6.id);\r",
+							"        pm.variables.set('followerId', user5.id);\r",
+							"        pm.variables.set('followingId', user6.id);\r",
+							"\r",
+							"        const approveFollowRequestResult = await api.approveFollowRequest(user6.id, user5.id);\r",
+							"\r",
+							"        pm.environment.set('followRequest', followRequest);\r",
+							"        pm.environment.set('approveFollowRequest', approveFollowRequestResult);\r",
+							"\r",
+							"    } catch (error) {\r",
+							"        console.error('Ошибка:', error);\r",
+							"    }\r",
+							"};\r",
+							"\r",
+							"main();\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код статуса 200 и данные в формате JSON\", function () {\r",
+							"    pm.response.to.have.status(200);  \r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"});\r",
+							"\r",
+							"const target = pm.response.json(); \r",
+							"\r",
+							"pm.test(\"Ответ должен быть объектом\", function () {\r",
+							"\r",
+							"    pm.expect(target.followers).to.deep.equal([], \"Список подписчиков должен быть пустой\")\r",
+							"    pm.expect(target.followers).to.deep.equal([], \"Список подписок должен быть пустой после удаления подписки\")\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(`Объект должен содержать поля: ownerId, followers и subscriptions`, function () {\r",
+							"\r",
+							"    pm.expect(target).to.have.property('ownerId').that.is.a('number');\r",
+							"    pm.expect(target).to.have.property('followers').that.is.a('array');\r",
+							"    pm.expect(target).to.have.property('subscriptions').that.is.a('array');\r",
+							"\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/subscriptions/:followerId/followers/:followingId/cancel",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"subscriptions",
+						":followerId",
+						"followers",
+						":followingId",
+						"cancel"
+					],
+					"variable": [
+						{
+							"key": "followerId",
+							"value": "{{followerId}}"
+						},
+						{
+							"key": "followingId",
+							"value": "{{followingId}}"
+						}
+					]
+				},
+				"description": "Обратите внимание: дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента"
+			},
+			"response": []
+		},
+		{
+			"name": "Получение списка подписок",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"class API {\r",
+							"    constructor(pm) {\r",
+							"        this.pm = pm;\r",
+							"        this.baseUrl = 'http://localhost:8080';\r",
+							"    }\r",
+							"\r",
+							"    generateRandomEmail(baseEmail) {\r",
+							"        const randomSuffix = Math.random().toString(36).substring(2, 8); // Генерация случайного суффикса\r",
+							"        const [localPart, domain] = baseEmail.split('@');\r",
+							"        return `${localPart}+${randomSuffix}@${domain}`;\r",
+							"    }\r",
+							"\r",
+							"    async sendRequest(method, path, body = null, headers = { 'Content-Type': 'application/json' }) {\r",
+							"        const options = {\r",
+							"            url: `${this.baseUrl}${path}`,\r",
+							"            method,\r",
+							"            header: headers,\r",
+							"        };\r",
+							"        if (body) {\r",
+							"            options.body = {\r",
+							"                mode: 'raw',\r",
+							"                raw: JSON.stringify(body),\r",
+							"            };\r",
+							"        }\r",
+							"        const response = await new Promise((resolve, reject) => {\r",
+							"            this.pm.sendRequest(options, (error, res) => {\r",
+							"                if (error) reject(error);\r",
+							"                else resolve(res);\r",
+							"            });\r",
+							"        });\r",
+							"        const jsonResponse = response.json();\r",
+							"        return jsonResponse;\r",
+							"    }\r",
+							"\r",
+							"    async createUser(email, name) {\r",
+							"        const randomEmail = this.generateRandomEmail(email);\r",
+							"        const userData = { email: randomEmail, name };\r",
+							"        const response = await this.sendRequest('POST', '/admin/users', userData);\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: пользователь не создан, отсутствует ID');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"\r",
+							"    async createFollowRequest(followerId, userId) {\r",
+							"        if (!followerId || !userId) {\r",
+							"            throw new Error('Ошибка: ID подписчика или пользователя отсутствуют');\r",
+							"        }\r",
+							"        const path = `/subscriptions/${followerId}/follow/${userId}`;\r",
+							"        const response = await this.sendRequest('POST', path, { status: 'PENDING' });\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: запрос на подписку не создан, отсутствует ID');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"\r",
+							"    async approveFollowRequest(ownerId, followerId) {\r",
+							"        if (!ownerId || !followerId) {\r",
+							"            throw new Error('Ошибка: ID владельца или подписчика отсутствуют');\r",
+							"        }\r",
+							"        const path = `/subscriptions/${ownerId}/request/${followerId}`;\r",
+							"        const response = await this.sendRequest('PATCH', path, { status: 'APPROVE_REQUEST' });\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: подписка не подтверждена');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"}\r",
+							"\r",
+							"const main = async () => {\r",
+							"    const api = new API(pm);\r",
+							"\r",
+							"    try {\r",
+							"        // Создаем пользователей\r",
+							"        const user5 = await api.createUser('user5@exampleza.com', 'User 5');\r",
+							"        pm.environment.set('user5Id', user5.id);\r",
+							"\r",
+							"        const user6 = await api.createUser('user6@exampleza.com', 'User 6');\r",
+							"        pm.environment.set('user6Id', user6.id);\r",
+							"\r",
+							"        // Создаем запрос на подписку\r",
+							"        const followRequest = await api.createFollowRequest(user5.id, user6.id);\r",
+							"        pm.variables.set('followerId', user5.id);\r",
+							"        pm.variables.set('followingId', user6.id);\r",
+							"\r",
+							"        // Подтверждаем запрос на подписку\r",
+							"        const approveFollowRequestResult = await api.approveFollowRequest(user6.id, user5.id);\r",
+							"\r",
+							"        // Устанавливаем результат в переменные Postman\r",
+							"        pm.environment.set('followRequest', followRequest);\r",
+							"        pm.environment.set('approveFollowRequest', approveFollowRequestResult);\r",
+							"\r",
+							"\r",
+							"    } catch (error) {\r",
+							"        console.error('Ошибка:', error);\r",
+							"    }\r",
+							"};\r",
+							"\r",
+							"main();\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код статуса 200 и данные в формате JSON\", function () {\r",
+							"    pm.response.to.have.status(200);  \r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"});\r",
+							"\r",
+							"const targets = pm.response.json(); \r",
+							"\r",
+							"pm.test(\"Ответ должен быть списком объектов\", function () {\r",
+							"    pm.expect(targets).to.be.an('array', \"Ответ должен быть массивом\");\r",
+							"    pm.expect(targets.length).to.be.greaterThan(0, \"Массив не должен быть пустым\");\r",
+							"});\r",
+							"\r",
+							"targets.forEach((target, index) => {\r",
+							"    pm.test(`Объект должен содержать поля: id и name`, function () {\r",
+							"        pm.expect(target).to.have.property('id').that.is.a('number');\r",
+							"        pm.expect(target).to.have.property('name').that.is.a('string');\r",
+							"    });\r",
+							"\r",
+							"    // pm.test(`Объект содержит корректные данные`, function () {\r",
+							"    //     pm.expect(target.id).to.equal(`${user5.id}`);\r",
+							"    //     pm.expect(target.category.name).to.equal(`${user5.name}`);\r",
+							"    // });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/subscriptions/:followerId/following",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"subscriptions",
+						":followerId",
+						"following"
+					],
+					"variable": [
+						{
+							"key": "followerId",
+							"value": "{{followerId}}"
+						}
+					]
+				},
+				"description": "Обратите внимание: дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента"
+			},
+			"response": []
+		},
+		{
+			"name": "Удаление подписчика",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"class API {\r",
+							"    constructor(pm) {\r",
+							"        this.pm = pm;\r",
+							"        this.baseUrl = 'http://localhost:8080';\r",
+							"    }\r",
+							"\r",
+							"    generateRandomEmail(baseEmail) {\r",
+							"        const randomSuffix = Math.random().toString(36).substring(2, 8);\r",
+							"        const [localPart, domain] = baseEmail.split('@');\r",
+							"        return `${localPart}+${randomSuffix}@${domain}`;\r",
+							"    }\r",
+							"\r",
+							"    async sendRequest(method, path, body = null, headers = { 'Content-Type': 'application/json' }) {\r",
+							"        const options = {\r",
+							"            url: `${this.baseUrl}${path}`,\r",
+							"            method,\r",
+							"            header: headers,\r",
+							"        };\r",
+							"        if (body) {\r",
+							"            options.body = {\r",
+							"                mode: 'raw',\r",
+							"                raw: JSON.stringify(body),\r",
+							"            };\r",
+							"        }\r",
+							"        const response = await new Promise((resolve, reject) => {\r",
+							"            this.pm.sendRequest(options, (error, res) => {\r",
+							"                if (error) reject(error);\r",
+							"                else resolve(res);\r",
+							"            });\r",
+							"        });\r",
+							"        const jsonResponse = response.json();\r",
+							"        return jsonResponse;\r",
+							"    }\r",
+							"\r",
+							"    async createUser(email, name) {\r",
+							"        const randomEmail = this.generateRandomEmail(email);\r",
+							"        const userData = { email: randomEmail, name };\r",
+							"        const response = await this.sendRequest('POST', '/admin/users', userData);\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: пользователь не создан, отсутствует ID');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"\r",
+							"    async createFollowRequest(followerId, userId) {\r",
+							"        if (!followerId || !userId) {\r",
+							"            throw new Error('Ошибка: ID подписчика или пользователя отсутствуют');\r",
+							"        }\r",
+							"        const path = `/subscriptions/${followerId}/follow/${userId}`;\r",
+							"        const response = await this.sendRequest('POST', path, { status: 'PENDING' });\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: запрос на подписку не создан, отсутствует ID');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"\r",
+							"    async approveFollowRequest(ownerId, followerId) {\r",
+							"        if (!ownerId || !followerId) {\r",
+							"            throw new Error('Ошибка: ID владельца или подписчика отсутствуют');\r",
+							"        }\r",
+							"        const path = `/subscriptions/${ownerId}/request/${followerId}`;\r",
+							"        const response = await this.sendRequest('PATCH', path, { status: 'APPROVE_REQUEST' });\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: подписка не подтверждена');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"}\r",
+							"\r",
+							"const main = async () => {\r",
+							"    const api = new API(pm);\r",
+							"\r",
+							"    try {\r",
+							"        // Создаем пользователей\r",
+							"        const user5 = await api.createUser('user5@exampletg.com', 'User 5');\r",
+							"        pm.environment.set('user5Id', user5.id);\r",
+							"\r",
+							"        const user6 = await api.createUser('user6@exampletg.com', 'User 6');\r",
+							"        pm.environment.set('user6Id', user6.id);\r",
+							"\r",
+							"        pm.variables.set('followerId', user5.id);\r",
+							"        pm.variables.set('followingId', user6.id);\r",
+							"\r",
+							"        // Создаем запрос на подписку\r",
+							"        const followRequest = await api.createFollowRequest(user5.id, user6.id);\r",
+							"        pm.environment.set('followRequest', followRequest);\r",
+							"\r",
+							"        // Подтверждаем запрос на подписку\r",
+							"        const approveFollowRequestResult = await api.approveFollowRequest(user6.id, user5.id);\r",
+							"        pm.environment.set('approveFollowRequest', approveFollowRequestResult);\r",
+							"\r",
+							"\r",
+							"    } catch (error) {\r",
+							"        console.error('Ошибка:', error);\r",
+							"    }\r",
+							"};\r",
+							"\r",
+							"main();\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код статуса 200 и данные в формате JSON\", function () {\r",
+							"    pm.response.to.have.status(200);  \r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"});\r",
+							"\r",
+							"const target = pm.response.json(); \r",
+							"\r",
+							"pm.test(\"Ответ должен быть объектом\", function () {\r",
+							"\r",
+							"    pm.expect(target.followers).to.deep.equal([], \"Список подписчиков должен быть пустой\")\r",
+							"    pm.expect(target.followers).to.deep.equal([], \"Список подписок должен быть пустой после удаления подписки\")\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(`Объект должен содержать поля: ownerId, followers и subscriptions`, function () {\r",
+							"\r",
+							"    pm.expect(target).to.have.property('ownerId').that.is.a('number');\r",
+							"    pm.expect(target).to.have.property('followers').that.is.a('array');\r",
+							"    pm.expect(target).to.have.property('subscriptions').that.is.a('array');\r",
+							"\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/subscriptions/:followingId/followings/:followerId/cancel",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"subscriptions",
+						":followingId",
+						"followings",
+						":followerId",
+						"cancel"
+					],
+					"variable": [
+						{
+							"key": "followingId",
+							"value": "{{followingId}}"
+						},
+						{
+							"key": "followerId",
+							"value": "{{followerId}}"
+						}
+					]
+				},
+				"description": "Обратите внимание: дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента"
+			},
+			"response": []
+		},
+		{
+			"name": "Создание Запроса на подписку Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Код ответа должен быть 201\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(201);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Ответ содержит ожидаемые поля\", function () {\r",
+							"    const target = pm.response.json();\r",
+							"\r",
+							"    pm.expect(target).to.have.property('id');\r",
+							"    pm.expect(target).to.have.property('userShortDto');\r",
+							"        pm.expect(target.userShortDto).to.have.property('id');\r",
+							"        pm.expect(target.userShortDto).to.have.property('name');\r",
+							"    pm.expect(target).to.have.property('createdOn');\r",
+							"    pm.expect(target).to.have.property('status');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Данные в ответе соответствуют ожиданиям\", function () {\r",
+							"    const target = pm.response.json();\r",
+							"\r",
+							"    pm.expect(target.userShortDto.id).to.not.be.null;\r",
+							"    pm.expect(target.userShortDto.id).to.not.be.null;\r",
+							"    pm.expect(target.userShortDto.name).to.not.be.null;\r",
+							"    pm.expect(target.createdOn).to.not.be.null;\r",
+							"    pm.expect(target.status).to.equal(\"PENDING\", 'Статус должен быть PENDING');\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"class API {\r",
+							"    constructor(pm) {\r",
+							"        this.pm = pm;\r",
+							"        this.baseUrl = 'http://localhost:8080';\r",
+							"    }\r",
+							"\r",
+							"    async sendRequest(method, path, body = null, headers = { 'Content-Type': 'application/json' }) {\r",
+							"        const options = {\r",
+							"            url: `${this.baseUrl}${path}`,\r",
+							"            method,\r",
+							"            header: headers,\r",
+							"        };\r",
+							"        if (body) {\r",
+							"            options.body = {\r",
+							"                mode: 'raw',\r",
+							"                raw: JSON.stringify(body),\r",
+							"            };\r",
+							"        }\r",
+							"        const response = await new Promise((resolve, reject) => {\r",
+							"            this.pm.sendRequest(options, (error, res) => {\r",
+							"                if (error) reject(error);\r",
+							"                else resolve(res);\r",
+							"            });\r",
+							"        });\r",
+							"        return response.json();\r",
+							"    }\r",
+							"\r",
+							"    async createUser(email, name) {\r",
+							"        const userData = {\r",
+							"            email: `${email}+${Math.random().toString(36).substring(2, 8)}`,\r",
+							"            name,\r",
+							"        };\r",
+							"        const response = await this.sendRequest('POST', '/admin/users', userData);\r",
+							"        return response;\r",
+							"    }\r",
+							"\r",
+							"    async createSubscription(followerId, followeeId) {\r",
+							"    if (!followerId || !followeeId) {\r",
+							"        throw new Error(\"Не переданы ID для создания подписки\");\r",
+							"    }\r",
+							"    const response = await this.sendRequest('POST', `/subscriptions/${followerId}/follow/${followeeId}`);\r",
+							"    return response;\r",
+							"    }\r",
+							"\r",
+							"}\r",
+							"\r",
+							"const main = async () => {\r",
+							"    const api = new API(pm);\r",
+							"\r",
+							"    try {\r",
+							"        // Создаем первого пользователя\r",
+							"        const user1 = await api.createUser('user1@example.com', 'User 1');\r",
+							"\r",
+							"        // Создаем второго пользователя\r",
+							"        const user2 = await api.createUser('user2@example.com', 'User 2');\r",
+							"\r",
+							"        // Создаем подписку между user1 и user2\r",
+							"        const subscription = await api.createSubscription(user1.id, user2.id);\r",
+							"\r",
+							"        pm.variables.set('followerId', user2.id); // ID подписчика\r",
+							"        pm.variables.set('followeeId', user1.id); // ID пользователя, на которого подписываются\r",
+							"\r",
+							"\r",
+							"    } catch (error) {\r",
+							"        console.error('Ошибка в процессе выполнения:', error);\r",
+							"    }\r",
+							"};\r",
+							"\r",
+							"main();\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"user1@example.com\",\r\n    \"name\": \"User 1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/subscriptions/:followerId/follow/:followedId",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"subscriptions",
+						":followerId",
+						"follow",
+						":followedId"
+					],
+					"variable": [
+						{
+							"key": "followerId",
+							"value": "{{followerId}}"
+						},
+						{
+							"key": "followedId",
+							"value": "{{followeeId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Одобрение заявки на подписку Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Код ответа должен быть 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"const response = pm.response.json();\r",
+							"pm.test(\"Ответ содержит ожидаемые поля\", function () {\r",
+							"    pm.expect(response).to.have.property('id');\r",
+							"    pm.expect(response).to.have.property('status');\r",
+							"    pm.expect(response).to.have.property('createdOn');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Статус подписки должен быть APPROVED\", function () {\r",
+							"    pm.expect(response.status).to.equal(\"APPROVED\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"class API {\r",
+							"    constructor(pm) {\r",
+							"        this.pm = pm;\r",
+							"        this.baseUrl = 'http://localhost:8080';\r",
+							"    }\r",
+							"\r",
+							"    async sendRequest(method, path, body = null, headers = { 'Content-Type': 'application/json' }) {\r",
+							"        const options = {\r",
+							"            url: `${this.baseUrl}${path}`,\r",
+							"            method,\r",
+							"            header: headers,\r",
+							"        };\r",
+							"        if (body) {\r",
+							"            options.body = {\r",
+							"                mode: 'raw',\r",
+							"                raw: JSON.stringify(body),\r",
+							"            };\r",
+							"        }\r",
+							"        const response = await new Promise((resolve, reject) => {\r",
+							"            this.pm.sendRequest(options, (error, res) => {\r",
+							"                if (error) reject(error);\r",
+							"                else resolve(res);\r",
+							"            });\r",
+							"        });\r",
+							"        const jsonResponse = response.json();\r",
+							"        return jsonResponse;\r",
+							"    }\r",
+							"\r",
+							"    async createUser(email, name) {\r",
+							"        const userData = {\r",
+							"            email: `${email}+${Math.random().toString(36).substring(2, 8)}`,\r",
+							"            name,\r",
+							"        };\r",
+							"        const response = await this.sendRequest('POST', '/admin/users', userData);\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: пользователь не создан, отсутствует ID');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"\r",
+							"    async createSubscription(followerId, followeeId) {\r",
+							"        if (!followerId || !followeeId) {\r",
+							"            throw new Error('Не переданы ID для создания подписки');\r",
+							"        }\r",
+							"        const path = `/subscriptions/${followerId}/follow/${followeeId}`;\r",
+							"        const response = await this.sendRequest('POST', path);\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: подписка не создана, отсутствует ID');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"}\r",
+							"\r",
+							"const main = async () => {\r",
+							"    const api = new API(pm);\r",
+							"\r",
+							"    try {\r",
+							"        const user1 = await api.createUser('user1@example.com', 'User 1');\r",
+							"\r",
+							"        const user2 = await api.createUser('user2@example.com', 'User 2');\r",
+							"\r",
+							"        pm.variables.set('followerId', user2.id); // ID подписчика\r",
+							"        pm.variables.set('followedId', user1.id); // ID пользователя, на которого подписываются\r",
+							"\r",
+							"        const subscription = await api.createSubscription(\r",
+							"            pm.variables.get('followerId'),\r",
+							"            pm.variables.get('followedId')\r",
+							"        );\r",
+							"\r",
+							"    } catch (error) {\r",
+							"        console.error('Ошибка в процессе выполнения:', error);\r",
+							"    }\r",
+							"};\r",
+							"\r",
+							"main();\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"status\": \"APPROVE_REQUEST\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/subscriptions/:followingId/request/:followerId",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"subscriptions",
+						":followingId",
+						"request",
+						":followerId"
+					],
+					"variable": [
+						{
+							"key": "followingId",
+							"value": "{{followedId}}"
+						},
+						{
+							"key": "followerId",
+							"value": "{{followerId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Получение списка событий по подписке",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"class API {\r",
+							"    constructor(pm) {\r",
+							"        this.pm = pm;\r",
+							"        this.baseUrl = 'http://localhost:8080';\r",
+							"    }\r",
+							"\r",
+							"    async sendRequest(method, path, body = null, headers = { 'Content-Type': 'application/json' }) {\r",
+							"        const options = {\r",
+							"            url: `${this.baseUrl}${path}`,\r",
+							"            method,\r",
+							"            header: headers,\r",
+							"        };\r",
+							"        if (body) {\r",
+							"            options.body = {\r",
+							"                mode: 'raw',\r",
+							"                raw: JSON.stringify(body),\r",
+							"            };\r",
+							"        }\r",
+							"        const response = await new Promise((resolve, reject) => {\r",
+							"            this.pm.sendRequest(options, (error, res) => {\r",
+							"                if (error) reject(error);\r",
+							"                else resolve(res);\r",
+							"            });\r",
+							"        });\r",
+							"        const jsonResponse = response.json();\r",
+							"        return jsonResponse;\r",
+							"    }\r",
+							"\r",
+							"    async createUser(email, name) {\r",
+							"        const userData = {\r",
+							"            email: `${email}+${Math.random().toString(36).substring(2, 8)}`,\r",
+							"            name,\r",
+							"        };\r",
+							"        const response = await this.sendRequest('POST', '/admin/users', userData);\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: пользователь не создан, отсутствует ID');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"\r",
+							"    async createCategory(baseName) {\r",
+							"        const categoryData = {\r",
+							"            name: `${baseName} ${Math.random().toString(36).substring(2, 8)}`,\r",
+							"        };\r",
+							"        const response = await this.sendRequest('POST', '/admin/categories', categoryData);\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: категория не создана, отсутствует ID');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"\r",
+							"    async createEvent(userId, categoryId) {\r",
+							"        const eventData = {\r",
+							"            annotation: \"Ut odio amet aspernatur animi.\",\r",
+							"            category: categoryId,\r",
+							"            description: \"Et quia voluptatem non et molestiae.\",\r",
+							"            eventDate: \"2025-12-06 00:28:29\",\r",
+							"            location: { lat: -7.0889, lon: -132.0976 },\r",
+							"            paid: true,\r",
+							"            participantLimit: 708,\r",
+							"            requestModeration: true,\r",
+							"            title: \"Adipisci aut rem consectetur laudantium aliquid animi molestiae sapiente.\"\r",
+							"        };\r",
+							"        const response = await this.sendRequest('POST', `/users/${userId}/events`, eventData);\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: событие не создано, отсутствует ID');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"\r",
+							"    async createFollowRequest(followerId, followeeId) {\r",
+							"        const response = await this.sendRequest(\r",
+							"            'POST',\r",
+							"            `/subscriptions/${followerId}/follow/${followeeId}`,\r",
+							"            { status: 'PENDING' }\r",
+							"        );\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: запрос на подписку не создан, отсутствует ID');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"\r",
+							"    async approveFollowRequest(ownerId, followerId) {\r",
+							"        const response = await this.sendRequest(\r",
+							"            'PATCH',\r",
+							"            `/subscriptions/${ownerId}/request/${followerId}`,\r",
+							"            { status: 'APPROVE_REQUEST' }\r",
+							"        );\r",
+							"        if (!response.id) {\r",
+							"            throw new Error('Ошибка: подписка не подтверждена');\r",
+							"        }\r",
+							"        return response;\r",
+							"    }\r",
+							"}\r",
+							"\r",
+							"const main = async () => {\r",
+							"    const api = new API(pm);\r",
+							"\r",
+							"    try {\r",
+							"        const user5 = await api.createUser('user5@exampleww.com', 'User 5');\r",
+							"        const user6 = await api.createUser('user6@exampleww.com', 'User 6');\r",
+							"\r",
+							"        pm.variables.set('followerId', user5.id);\r",
+							"        pm.variables.set('followedId', user6.id);\r",
+							"\r",
+							"        const category = await api.createCategory('Категория тестовая');\r",
+							"\r",
+							"        const event = await api.createEvent(user6.id, category.id);\r",
+							"\r",
+							"        const followRequest = await api.createFollowRequest(\r",
+							"            pm.variables.get('followerId'),\r",
+							"            pm.variables.get('followedId')\r",
+							"        );\r",
+							"\r",
+							"        const approveFollowRequestResult = await api.approveFollowRequest(\r",
+							"            pm.variables.get('followedId'),\r",
+							"            pm.variables.get('followerId')\r",
+							"        );\r",
+							"\r",
+							"\r",
+							"    } catch (error) {\r",
+							"        console.error(\"Ошибка:\", error);\r",
+							"    }\r",
+							"};\r",
+							"\r",
+							"main();\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код статуса 200 и данные в формате JSON\", function () {\r",
+							"    pm.response.to.have.status(200);  \r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"});\r",
+							"\r",
+							"const target = pm.response.json(); \r",
+							"\r",
+							"pm.test(\"Ответ должен быть массивом или объектом\", function () {\r",
+							"    const isArray = Array.isArray(target);\r",
+							"    pm.expect(target).to.satisfy(t => isArray || typeof t === 'object', \"Ответ должен быть массивом или объектом\");\r",
+							"});\r",
+							"\r",
+							"if (Array.isArray(target)) {\r",
+							"    pm.test(\"Ответ должен быть списком объектов\", function () {\r",
+							"        pm.expect(target).to.be.an('array', \"Ответ должен быть массивом\");\r",
+							"        pm.expect(target.length).to.be.greaterThan(0, \"Массив не должен быть пустым\");\r",
+							"    });\r",
+							"\r",
+							"    target.forEach((item, index) => {\r",
+							"        pm.test(`Объект №${index + 1} должен содержать корректные поля`, function () {\r",
+							"            pm.expect(item).to.have.property('id').that.is.a('number');\r",
+							"            pm.expect(item).to.have.property('title').that.is.a('string');\r",
+							"            pm.expect(item).to.have.property('annotation').that.is.a('string');\r",
+							"            pm.expect(item).to.have.property('category').that.is.an('object');\r",
+							"            pm.expect(item.category).to.have.property('id').that.is.a('number');\r",
+							"            pm.expect(item.category).to.have.property('name').that.is.a('string');\r",
+							"            pm.expect(item).to.have.property('paid').that.is.a('boolean');\r",
+							"            pm.expect(item).to.have.property('eventDate').that.is.a('string');\r",
+							"            pm.expect(item).to.have.property('initiator').that.is.an('object');\r",
+							"            pm.expect(item.initiator).to.have.property('id').that.is.a('number');\r",
+							"            pm.expect(item.initiator).to.have.property('name').that.is.a('string');\r",
+							"            pm.expect(item).to.have.property('description').that.is.a('string');\r",
+							"            pm.expect(item).to.have.property('participantLimit').that.is.a('number');\r",
+							"            pm.expect(item).to.have.property('state').that.is.a('string');\r",
+							"            pm.expect(item).to.have.property('createdOn').that.is.a('string');\r",
+							"            pm.expect(item).to.have.property('location').that.is.an('object');\r",
+							"            pm.expect(item.location).to.have.property('lat').that.is.a('number');\r",
+							"            pm.expect(item.location).to.have.property('lon').that.is.a('number');\r",
+							"            pm.expect(item).to.have.property('requestModeration').that.is.a('boolean');\r",
+							"            pm.expect(item).to.have.property('views').that.is.a('number');\r",
+							"        });\r",
+							"    });\r",
+							"} else {\r",
+							"    pm.test(\"Объект должен содержать ожидаемые поля\", function () {\r",
+							"        pm.expect(target).to.have.property('id').that.is.a('number');\r",
+							"        pm.expect(target).to.have.property('title').that.is.a('string');\r",
+							"        pm.expect(target).to.have.property('annotation').that.is.a('string');\r",
+							"        // Остальные проверки для объекта\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/subscriptions/:followerId/following/:followedId",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"subscriptions",
+						":followerId",
+						"following",
+						":followedId"
+					],
+					"variable": [
+						{
+							"key": "followerId",
+							"value": "{{followerId}}"
+						},
+						{
+							"key": "followedId",
+							"value": "{{followedId}}"
+						}
+					]
+				},
+				"description": "Обратите внимание: дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					"API = class {\r",
+					"    constructor(postman, verbose = false, baseUrl = \"http://localhost:8080\") {\r",
+					"        this.baseUrl = baseUrl;\r",
+					"        this.pm = postman;\r",
+					"        this._verbose = verbose;\r",
+					"    }\r",
+					"\r",
+					"    async addUser(user, verbose=null) {\r",
+					"        return this.post(\"/admin/users\", user, \"Ошибка при добавлении нового пользователя: \", verbose);\r",
+					"    }\r",
+					"\r",
+					"    async addCategory(category, verbose=null) {\r",
+					"        return this.post(\"/admin/categories\", category, \"Ошибка при добавлении новой категории: \", verbose);\r",
+					"    }\r",
+					"\r",
+					"    async addEvent(userId, event, verbose=null) {\r",
+					"        return this.post(\"/users/\" + userId + \"/events\", event, \"Ошибка при добавлении нового события: \", verbose);\r",
+					"    }\r",
+					"\r",
+					"    async addCompilation(compilation, verbose=null) {\r",
+					"        return this.post(\"/admin/compilations\", compilation, \"Ошибка при добавлении новой подборки: \", verbose);\r",
+					"    }\r",
+					"\r",
+					"    async publishParticipationRequest(eventId, userId, verbose=null) {\r",
+					"        return this.post('/users/' + userId + '/requests?eventId=' + eventId, null, \"Ошибка при добавлении нового запроса на участие в событии\", verbose);\r",
+					"    }\r",
+					"\r",
+					"    async publishEvent(eventId, verbose=null) {\r",
+					"        return this.patch('/admin/events/' + eventId, {stateAction: \"PUBLISH_EVENT\"}, \"Ошибка при публикации события\", verbose);\r",
+					"    }\r",
+					"    \r",
+					"    async rejectEvent(eventId, verbose=null) {\r",
+					"        return this.patch('/admin/events/' + eventId, {stateAction: \"REJECT_EVENT\"}, \"Ошибка при отмене события\", verbose);\r",
+					"    }\r",
+					"\r",
+					"    async acceptParticipationRequest(eventId, userId, reqId, verbose=null) {\r",
+					"        return this.patch('/users/' + userId + '/events/' + eventId + '/requests', {requestIds:[reqId], status: \"CONFIRMED\"}, \"Ошибка при принятии заявки на участие в событии\", verbose);\r",
+					"    }\r",
+					"\r",
+					"    async findCategory(catId, verbose=null) {\r",
+					"        return this.get('/categories/' + catId, null, \"Ошибка при поиске категории по id\", verbose);\r",
+					"    }\r",
+					"\r",
+					"    async findCompilation(compId, verbose=null) {\r",
+					"        return this.get('/compilations/' + compId, null, \"Ошибка при поиске подборки по id\", verbose);\r",
+					"    }\r",
+					"\r",
+					"    async findEvent(eventId, verbose=null) {\r",
+					"        return this.get('/events/' + eventId, null, \"Ошибка при поиске события по id\", verbose);\r",
+					"    }\r",
+					"\r",
+					"    async findUser(userId, verbose=null) {\r",
+					"        return this.get('/admin/users?ids=' + userId, null, \"Ошибка при поиске пользователя по id\", verbose);\r",
+					"    }\r",
+					"\r",
+					"    async post(path, body, errorText = \"Ошибка при выполнении post-запроса: \", verbose=null) {\r",
+					"        return this.sendRequest(\"POST\", path, body, errorText, verbose);\r",
+					"    }\r",
+					"\r",
+					"    async patch(path, body = null, errorText = \"Ошибка при выполнении patch-запроса: \", verbose=null) {\r",
+					"        return this.sendRequest(\"PATCH\", path, body, errorText, verbose);\r",
+					"    }\r",
+					"\r",
+					"    async get(path, body = null, errorText = \"Ошибка при выполнении get-запроса: \", verbose=null) {\r",
+					"        return this.sendRequest(\"GET\", path, body, errorText, verbose);\r",
+					"    }\r",
+					"    async sendRequest(method, path, body=null, errorText = \"Ошибка при выполнении запроса: \", verbose=null) {\r",
+					"        return new Promise((resolve, reject) => {\r",
+					"            verbose = verbose == null ? this._verbose : verbose;\r",
+					"            const request = {\r",
+					"                url: this.baseUrl + path,\r",
+					"                method: method,\r",
+					"                body: body == null ? \"\" : JSON.stringify(body),\r",
+					"                header: { \"Content-Type\": \"application/json\" },\r",
+					"            };\r",
+					"            if(verbose) {\r",
+					"                console.log(\"Отправляю запрос: \", request);\r",
+					"            }\r",
+					"\r",
+					"            try {\r",
+					"                this.pm.sendRequest(request, (error, response) => {\r",
+					"                    if(error || (response.code >= 400 && response.code <= 599)) {\r",
+					"                        let err = error ? error : JSON.stringify(response.json());\r",
+					"                        console.error(\"При выполнении запроса к серверу возникла ошика.\\n\", err,\r",
+					"                             \"\\nДля отладки проблемы повторите такой же запрос к вашей программе \" + \r",
+					"                             \"на локальном компьютере. Данные запроса:\\n\", JSON.stringify(request));\r",
+					"\r",
+					"                        reject(new Error(errorText + err));\r",
+					"                    }\r",
+					"                    if(verbose) {\r",
+					"                        console.log(\"Результат обработки запроса: код состояния - \", response.code, \", тело: \", response.json());\r",
+					"                    }\r",
+					"                    if (response.stream.length === 0){\r",
+					"                        reject(new Error('Отправлено пустое тело ответа'))\r",
+					"                    }else{\r",
+					"                        resolve(response.json());\r",
+					"                    }\r",
+					"                });\r",
+					"                \r",
+					"            } catch(err) {\r",
+					"                if(verbose) {\r",
+					"                    console.error(errorText, err);\r",
+					"                }\r",
+					"                return Promise.reject(err);\r",
+					"            }\r",
+					"        });\r",
+					"    }\r",
+					"};\r",
+					"\r",
+					"RandomUtils = class {\r",
+					"    constructor() {}\r",
+					"\r",
+					"    getUser() {\r",
+					"        return {\r",
+					"            name: pm.variables.replaceIn('{{$randomFullName}}'),\r",
+					"            email: pm.variables.replaceIn('{{$randomEmail}}')\r",
+					"        };\r",
+					"    }\r",
+					"\r",
+					"    getCategory() {\r",
+					"        return {\r",
+					"            name: pm.variables.replaceIn('{{$randomWord}}') + Math.floor(Math.random() * 10000 * Math.random()).toString()\r",
+					"        };\r",
+					"    }\r",
+					"\r",
+					"    getEvent(categoryId) {\r",
+					"        return {\r",
+					"            annotation: pm.variables.replaceIn('{{$randomLoremParagraph}}'),\r",
+					"            category: categoryId,\r",
+					"            description: pm.variables.replaceIn('{{$randomLoremParagraphs}}'),\r",
+					"            eventDate: this.getFutureDateTime(),\r",
+					"            location: {\r",
+					"                lat: parseFloat(pm.variables.replaceIn('{{$randomLatitude}}')),\r",
+					"                lon: parseFloat(pm.variables.replaceIn('{{$randomLongitude}}')),\r",
+					"            },\r",
+					"            paid: pm.variables.replaceIn('{{$randomBoolean}}'),\r",
+					"            participantLimit: pm.variables.replaceIn('{{$randomInt}}'),\r",
+					"            requestModeration: pm.variables.replaceIn('{{$randomBoolean}}'),\r",
+					"            title: pm.variables.replaceIn('{{$randomLoremSentence}}'),\r",
+					"        }\r",
+					"    }\r",
+					"\r",
+					"    getCompilation(...eventIds) {\r",
+					"        return {\r",
+					"            title: pm.variables.replaceIn('{{$randomLoremSentence}}').slice(0, 50),\r",
+					"            pinned: pm.variables.replaceIn('{{$randomBoolean}}'),\r",
+					"            events: eventIds\r",
+					"        };\r",
+					"    }\r",
+					"\r",
+					"\r",
+					"    getFutureDateTime(hourShift = 5, minuteShift=0, yearShift=0) {\r",
+					"        let moment = require('moment');\r",
+					"\r",
+					"        let m = moment();\r",
+					"        m.add(hourShift, 'hour');\r",
+					"        m.add(minuteShift, 'minute');\r",
+					"        m.add(yearShift, 'year');\r",
+					"\r",
+					"        return m.format('YYYY-MM-DD HH:mm:ss');\r",
+					"    }\r",
+					"\r",
+					"    getWord(length = 1) {\r",
+					"        let result = '';\r",
+					"        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\r",
+					"        const charactersLength = characters.length;\r",
+					"        let counter = 0;\r",
+					"        while (counter < length) {\r",
+					"            result += characters.charAt(Math.floor(Math.random() * charactersLength));\r",
+					"            counter += 1;\r",
+					"        }\r",
+					"        return result;\r",
+					"    }\r",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

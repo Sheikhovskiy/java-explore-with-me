@@ -18,6 +18,8 @@ import ewm.exception.ConditionsNotRespected;
 import ewm.exception.NotFoundException;
 import ewm.request.RequestRepository;
 import ewm.request.RequestStatus;
+import ewm.subscription.model.Subscription;
+import ewm.subscription.repository.SubscriptionRepository;
 import ewm.user.AdminUserParam;
 import ewm.user.PrivateUserEventParam;
 import ewm.user.PrivateUserRequestParam;
@@ -49,6 +51,8 @@ public class UserServiceImpl implements UserService {
     private final CategoryRepository categoryRepository;
 
     private final LocationRepository locationRepository;
+
+    private final SubscriptionRepository subscriptionRepository;
 
     private static final String USER_EXISTS_BY_EMAIL = "Ошибка при работе с пользователями: " +
             "Пользователь с почтой %s уже существует!";
@@ -83,7 +87,20 @@ public class UserServiceImpl implements UserService {
         if (emailExists) {
             throw new ConditionsNotRespected(String.format(USER_EXISTS_BY_EMAIL, user.getEmail()));
         }
-        return userRepository.save(user);
+        Subscription subscription = new Subscription();
+
+        User userCreated = userRepository.save(user);
+        System.out.println(userCreated);
+
+        subscription.setSubscriptions(new ArrayList<>());
+        subscription.setFollowers(new ArrayList<>());
+        subscription.setOwner(userCreated);
+        subscriptionRepository.save(subscription);
+
+        userCreated.setSubscription(subscription);
+        userRepository.save(userCreated);
+
+        return userCreated;
     }
 
     @Override

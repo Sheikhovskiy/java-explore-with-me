@@ -35,4 +35,5 @@ public interface UserService {
     List<Request> getRequestsOfUserEvent(PrivateUserEventParam privateUserEventParam);
 
     EventRequestStatusUpdateShortResult updateParticipationRequests(PrivateUserEventParam privateUserEventParam);
+
 }
