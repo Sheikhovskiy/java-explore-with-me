@@ -16,6 +16,11 @@ import ewm.event.model.QEvent;
 import ewm.event.repository.LocationRepository;
 import ewm.exception.ConditionsNotRespected;
 import ewm.exception.NotFoundException;
+import ewm.subscription.SubscriptionParam;
+import ewm.subscription.model.Subscription;
+import ewm.subscription.repository.SubscriptionRepository;
+import ewm.user.User;
+import ewm.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,11 +42,18 @@ public class EventServiceImpl implements EventService {
 
     private final LocationRepository locationRepository;
 
+    private final UserRepository userRepository;
+
     private final StatClient statClient;
 
-    private static final String NOT_EXISTING_EVENT = "Событие не найдено или недоступно";
+    private final SubscriptionRepository subscriptionRepository;
+
+
+    private static final String NOT_EXISTING_EVENT = "Событие не найдено или недоступно %s";
 
     private static final String NOT_RESPECTED_CONDITIONS_TO_UPDATE_EVENT = "Событие не удовлетворяет правилам редактирования";
+
+    private static final String NOT_EXISTING_USER = "Пользователь с id %s не найден";
 
 
 
@@ -267,8 +279,50 @@ public class EventServiceImpl implements EventService {
 
 
 
+    @Override
+    public List<Event> getEventsByFollowedId(SubscriptionParam subscriptionParam) {
+
+        Long followerId = subscriptionParam.getFollowerId();
+        Long followingId = subscriptionParam.getFollowingId();
+
+        User follower = checkIfUserExists(followerId);
+        User following = checkIfUserExists(followingId);
+
+        Subscription subscription = subscriptionRepository.findByOwnerId(followingId);
+        System.out.println(subscription.getId());
+        System.out.println(subscription.getFollowers());
+        System.out.println(subscription.getSubscriptions());
+
+        if (subscription.getFollowers() == null || !subscription.getFollowers().contains(followerId)) {
+            System.out.println(subscription.getFollowers());
+            throw new ConditionsNotRespected(String.format("Вы не подписаны на пользователя с id %s", followingId));
+        }
 
 
+        QEvent qEvent = QEvent.event;
+
+        BooleanExpression predicate = qEvent.initiator.id.eq(followingId);
+
+        Iterable<Event> eventIterable = eventRepository.findAll(predicate);
+        List<Event> eventList = new ArrayList<>();
+        eventIterable.forEach(eventList::add);
+
+        return eventList;
+    }
+
+
+
+
+
+    private User checkIfUserExists(Long userId) {
+        Optional<User> userOpt = userRepository.getUserById(userId);
+
+        if (userOpt.isEmpty()) {
+            throw new NotFoundException(NOT_EXISTING_USER);
+        }
+
+        return userOpt.get();
+    }
 
     private LocalDateTime fromStringToLocalDateTime(String strDate) {
 

@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class UserMapper {
 
-    public static User fromNewUserRequest(NewUserRequest newUserRequest) {
+    public User fromNewUserRequest(NewUserRequest newUserRequest) {
 
         User user = new User();
         user.setEmail(newUserRequest.getEmail());
@@ -20,7 +20,7 @@ public class UserMapper {
         return user;
     }
 
-    public static UserDto fromUserToUserDto(User user) {
+    public UserDto fromUserToUserDto(User user) {
 
         UserDto userDto = new UserDto();
 
@@ -31,7 +31,7 @@ public class UserMapper {
         return userDto;
     }
 
-    public static UserShortDto fromUserToUserShortDto(User user) {
+    public UserShortDto fromUserToUserShortDto(User user) {
 
         UserShortDto userShortDto = new UserShortDto();
 
@@ -40,7 +40,14 @@ public class UserMapper {
         return userShortDto;
     }
 
-    public static List<UserDto> fromListUserToListUserDto(List<User> userList) {
+    public List<UserShortDto> fromUserListToListUserShortDto(List<User> userList) {
+
+        return userList.stream()
+                .map(UserMapper::fromUserToUserShortDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<UserDto> fromListUserToListUserDto(List<User> userList) {
 
         return userList.stream()
                 .map(UserMapper::fromUserToUserDto)

@@ -1,10 +1,14 @@
 package ewm.user;
 
+import ewm.subscription.model.Subscription;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -22,8 +26,11 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+//@NamedEntityGraph(name = "user.subscriptions", attributeNodes = {
+//        @NamedAttributeNode("subscriptions"),
+//        @NamedAttributeNode("followers")
+//})
 public class User {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,5 +44,10 @@ public class User {
     @Column(name = "name")
     @Size(min = 2, max = 250)
     private String name;
+
+    @OneToOne(mappedBy = "owner", cascade = CascadeType.ALL)
+    @JoinColumn(name = "subscription_id")
+    private Subscription subscription;
+
 
 }
